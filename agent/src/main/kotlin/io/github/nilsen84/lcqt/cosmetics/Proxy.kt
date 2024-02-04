@@ -13,7 +13,7 @@ import java.io.File
 
 @Suppress("unused")
 object Proxy {
-    private val assetDir = File(System.getProperty("user.home"), ".lunarclient/textures/assets/lunar")
+    private val assetDir = File(getTexturesDir(), "assets/lunar")
 
     private val cosmeticsIndex = assetDir.resolve("cosmetics/index").readLines().map(CosmeticIndexEntry::fromLine)
     private val emotesIndex = LcqtPatcher.JSON.decodeFromString<EmoteIndex>(
@@ -119,3 +119,8 @@ object Proxy {
         configFile.writeText(LcqtPatcher.JSON.encodeToString(this))
     }
 }
+
+fun getTexturesDir() =
+    """--texturesDir\s+(\S+)""".toRegex()
+        .find(System.getProperty("sun.java.command"))
+        ?.groupValues?.get(1)
