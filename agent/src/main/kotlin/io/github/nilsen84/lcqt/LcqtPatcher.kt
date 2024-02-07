@@ -21,7 +21,7 @@ object LcqtPatcher {
 
     @JvmStatic
     fun premain(configPath: String?, inst: Instrumentation) {
-        val patches = mutableListOf<Patch>(ClassloaderPatch())
+        val patches = mutableListOf<Patch>(ClassloaderPatch(), AntiAgentPatch())
         if (config.cosmeticsEnabled) patches += CosmeticsPatch()
         if (config.freelookEnabled) patches += FreelookPatch()
         if (config.crackedEnabled) patches += CrackedAccountPatch()

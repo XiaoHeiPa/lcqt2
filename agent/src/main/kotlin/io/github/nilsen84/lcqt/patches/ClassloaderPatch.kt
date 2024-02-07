@@ -9,6 +9,8 @@ import org.objectweb.asm.tree.LabelNode
 class ClassloaderPatch: Patch() {
     companion object {
         @JvmStatic
+
+        @Suppress("unused")
         fun shouldLoadInSCL(name: String): Boolean {
             return name.startsWith("io.github.nilsen84.lcqt.") &&
                     !name.startsWith("io.github.nilsen84.lcqt.minecraft.")
