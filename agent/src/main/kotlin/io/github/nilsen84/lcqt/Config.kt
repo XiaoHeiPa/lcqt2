@@ -16,4 +16,7 @@ class Config {
     val rawInputEnabled: Boolean = false
 
     val packFixEnabled: Boolean = false
+
+    val customMetadataEnabled: Boolean = false
+    val customMetadataURL: String = "https://www.lunarclient.top/api"
 }
