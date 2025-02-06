@@ -27,13 +27,15 @@ object Proxy {
 
     @JvmStatic
     fun onSend(method: String, contents: ByteArray): ByteArray {
-        println("SENT: $method")
-        when(method) {
+        if (LcqtPatcher.DEBUG_MODE) {
+            println("SENT: $method")
+        }
+        when (method) {
             "lunarclient.websocket.cosmetic.v1.CosmeticService.UpdateCosmeticSettings" -> {
                 val packet = UpdateCosmeticSettings.parseFrom(contents).toBuilder()
 
                 config.equippedCosmetics = packet.settings.activeCosmeticIdsList
-                if(packet.settings.hasPlusColor() && packet.settings.plusColor.color > 0) {
+                if (packet.settings.hasPlusColor() && packet.settings.plusColor.color > 0) {
                     config.equippedPlusColor = packet.settings.plusColor.color
                 }
                 config.save()
@@ -43,6 +45,7 @@ object Proxy {
 
                 return packet.build().toByteArray()
             }
+
             "lunarclient.websocket.emote.v1.EmoteService.UpdateEquippedEmotes" -> {
                 val packet = UpdateEquippedEmotes.parseFrom(contents).toBuilder()
 
@@ -59,14 +62,19 @@ object Proxy {
 
     @JvmStatic
     fun onReceive(method: String, contents: ByteArray): ByteArray {
-        println("RECEIVED: $method")
-
-        when(method) {
+        if (LcqtPatcher.DEBUG_MODE) {
+            println("RECEIVED: $method")
+        }
+        when (method) {
             "lunarclient.websocket.cosmetic.v1.CosmeticService.Login" -> {
                 val packet = CosmeticService.LoginResponse.parseFrom(contents).toBuilder()
 
                 packet.clearOwnedCosmeticIds()
                 packet.addAllOwnedCosmeticIds(cosmeticsIndex.map { it.id })
+                // for latest LC
+                packet.addAllAvailableCosmetics(cosmeticsIndex.map {
+                    CosmeticService.AvailableCosmetics.newBuilder().setId(it.id).build()
+                })
 
                 packet.setLogoColor(Color.newBuilder().setColor(0xFF55FF))
 
@@ -85,6 +93,7 @@ object Proxy {
 
                 return packet.build().toByteArray()
             }
+
             "lunarclient.websocket.emote.v1.EmoteService.Login" -> {
                 return EmoteService.LoginResponse.parseFrom(contents).toBuilder().apply {
                     clearOwnedEmoteIds()
@@ -94,9 +103,10 @@ object Proxy {
                     addAllEquippedEmoteIds(config.equippedEmotes)
                 }.build().toByteArray()
             }
+
             "lunarclient.websocket.emote.v1.EmoteService.UseEmote" -> {
                 val packet = UseEmoteResponse.parseFrom(contents)
-                if(packet.status == EmoteService.UseEmoteResponse.Status.STATUS_EMOTE_NOT_OWNED) {
+                if (packet.status == EmoteService.UseEmoteResponse.Status.STATUS_EMOTE_NOT_OWNED) {
                     return packet.toBuilder()
                         .setStatus(UseEmoteResponse.Status.STATUS_OK)
                         .build()
@@ -104,6 +114,7 @@ object Proxy {
                 }
                 return contents
             }
+
             else -> return contents
         }
     }

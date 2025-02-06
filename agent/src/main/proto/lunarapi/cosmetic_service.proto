@@ -7,10 +7,16 @@ message LoginResponse {
   repeated int32 owned_cosmetic_ids = 2;
   repeated util.Color available_plus_colors = 3;
   util.Color logo_color = 4;
+
+  repeated AvailableCosmetics available_cosmetics = 7; // ui
 }
 
 message UpdateCosmeticSettings {
   Settings settings = 1;
+}
+
+message AvailableCosmetics {
+  int32 id = 1;
 }
 
 message Settings {

@@ -8,6 +8,8 @@ import java.lang.instrument.Instrumentation
 
 object LcqtPatcher {
     val JSON = Json { ignoreUnknownKeys = true; prettyPrint = true }
+    private val celestial = System.getProperty("celestialVersion").isNotEmpty()
+    val DEBUG_MODE = System.getProperties().contains("lcqtDebug")
 
     @get:JvmName("configDir")
     val configDir = getConfigDir()
@@ -21,7 +23,12 @@ object LcqtPatcher {
 
     @JvmStatic
     fun premain(configPath: String?, inst: Instrumentation) {
-        val patches = mutableListOf<Patch>(ClassloaderPatch(), AntiAgentPatch())
+        val patches = mutableListOf<Patch>()
+        if (celestial) {
+            println("Celestial launcher deteched, skipping classloader patch...")
+        } else {
+            patches.add(ClassloaderPatch())
+        }
         if (config.cosmeticsEnabled) patches += CosmeticsPatch()
         if (config.freelookEnabled) patches += FreelookPatch()
         if (config.crackedEnabled) patches += CrackedAccountPatch()
@@ -30,7 +37,7 @@ object LcqtPatcher {
         if (config.fpsSpoofEnabled) patches += FPSSpoofPatch()
         if (config.rawInputEnabled) patches += RawInputPatch()
         if (config.packFixEnabled) patches += PackFixPatch()
-        if (config.customMetadataEnabled) patches += CustomMetadataPatch()
+//        if (config.customMetadataEnabled) patches += CustomMetadataPatch() // can be modified with serviceOverride
 
         println("RUNNING LCQT WITH PATCHES: " + patches.joinToString {
             it::class.simpleName!!
